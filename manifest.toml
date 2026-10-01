@@ -1,0 +1,81 @@
+#:schema https://raw.githubusercontent.com/YunoHost/apps/main/schemas/manifest.v2.schema.json
+
+packaging_format = 2
+id = "iptvtunerr"
+name = "IPTV Tunerr"
+description.en = "IPTV tuner and XMLTV guide bridge for Plex, Emby, and Jellyfin"
+version = "0.1.88~ynh1"
+maintainers = ["snapetech"]
+
+[upstream]
+license = "AGPL-3.0-or-later"
+userdoc = "https://github.com/snapetech/iptvtunerr/blob/main/docs/how-to/deployment.md"
+admindoc = "https://github.com/YunoHost-Apps/iptvtunerr_ynh/blob/testing/doc/ADMIN.md"
+code = "https://github.com/snapetech/iptvtunerr"
+
+[integration]
+yunohost = ">= 12.1.0"
+helpers_version = "2.1"
+architectures = ["amd64", "arm64", "armhf"]
+multi_instance = false
+ldap = false
+sso = false
+disk = "100M"
+ram.build = "50M"
+ram.runtime = "512M"
+
+[install]
+  [install.domain]
+  type = "domain"
+
+  [install.path]
+  type = "path"
+  default = "/"
+  pattern = { regexp = "^/$", error = "IPTV Tunerr must be installed at the root of a dedicated domain; URL subpaths are not supported." }
+
+  [install.base_url]
+  ask.en = "URL that Plex, Emby, or Jellyfin will use to reach this tuner"
+  help.en = "Leave empty to use https://<the selected domain>. Use this domain's HTTPS URL with no path or port. If LAN clients cannot reach it, configure split-horizon DNS for the selected domain."
+  type = "url"
+  optional = true
+  default = ""
+
+  [install.trusted_networks]
+  ask.en = "Trusted LAN or VPN networks allowed to reach IPTV Tunerr"
+  help.en = "Comma-separated IP addresses or CIDR ranges. This restriction is required because tuner endpoints do not use YunoHost SSO. Do not enter 0.0.0.0/0 or ::/0."
+  type = "text"
+  default = "127.0.0.0/8,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fc00::/7"
+
+  [resources.sources]
+    [resources.sources.main]
+    format = "tar.gz"
+    in_subdir = true
+    amd64.url = "https://github.com/snapetech/iptvtunerr/releases/download/v0.1.88/iptv-tunerr-v0.1.88-linux-amd64.tar.gz"
+    amd64.sha256 = "4d0a449be0a86e9b3868d46d4ac1a65bdb2974c4b678279330914b7325161083"
+    arm64.url = "https://github.com/snapetech/iptvtunerr/releases/download/v0.1.88/iptv-tunerr-v0.1.88-linux-arm64.tar.gz"
+    arm64.sha256 = "06b2f3564ccacd04634b474780f1f1652d85b3304fc03b37a6cf1fd4b182767b"
+    armhf.url = "https://github.com/snapetech/iptvtunerr/releases/download/v0.1.88/iptv-tunerr-v0.1.88-linux-armv7.tar.gz"
+    armhf.sha256 = "9f712e5a40464637064749d4c956173f31346a996b1b3cd80b656522f34bd56c"
+    autoupdate.strategy = "latest_github_release"
+    autoupdate.asset.amd64 = "^iptv-tunerr-v.*-linux-amd64\\.tar\\.gz$"
+    autoupdate.asset.arm64 = "^iptv-tunerr-v.*-linux-arm64\\.tar\\.gz$"
+    autoupdate.asset.armhf = "^iptv-tunerr-v.*-linux-armv7\\.tar\\.gz$"
+
+  [resources.system_user]
+
+  [resources.install_dir]
+
+  [resources.data_dir]
+  subdirs = ["cache"]
+
+  [resources.permissions]
+  main.url = "/"
+  main.show_tile = false
+  main.allowed = "visitors"
+  main.auth_header = false
+
+  [resources.ports]
+  main.default = 5004
+
+  [resources.apt]
+  packages = ["ca-certificates", "ffmpeg", "python3"]

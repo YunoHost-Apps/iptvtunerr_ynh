@@ -1,0 +1,15 @@
+#!/bin/bash
+
+source _common.sh
+
+if [[ "$new_path" != "/" ]]; then
+	ynh_die --message="IPTV Tunerr requires the root of a dedicated domain; URL subpaths are not supported."
+fi
+
+ynh_script_progression "Updating IPTV Tunerr's tuner URL and Nginx domain configuration..."
+ynh_app_setting_set --key=base_url --value="https://$new_domain"
+ynh_change_url_nginx_config
+ynh_config_add_systemd
+ynh_systemctl --service="$app" --action="restart"
+
+ynh_script_progression "IPTV Tunerr URL update completed"

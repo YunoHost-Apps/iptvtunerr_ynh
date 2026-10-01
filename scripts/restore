@@ -1,0 +1,24 @@
+#!/bin/bash
+
+source ../settings/scripts/_common.sh
+
+ynh_script_progression "Restoring IPTV Tunerr files..."
+ynh_restore
+
+if [[ -d "$YNH_APP_BACKUP_DIR/data" ]]; then
+	install -d -o "$app" -g "$app" -m 0700 "$data_dir" "$data_dir/cache"
+	rsync --archive --delete "$YNH_APP_BACKUP_DIR/data/" "$data_dir/"
+else
+	ynh_die --message="IPTV Tunerr data snapshot is missing from this backup."
+fi
+chown -R "$app:$app" "$data_dir"
+chown -R "$app:$app" "$install_dir"
+
+ynh_script_progression "Restoring IPTV Tunerr service and reverse proxy configuration..."
+iptvtunerr_prepare_service
+
+ynh_script_progression "Starting IPTV Tunerr..."
+ynh_systemctl --service="$app" --action="start"
+iptvtunerr_register_service
+
+ynh_script_progression "IPTV Tunerr restoration completed"

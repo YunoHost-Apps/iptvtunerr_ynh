@@ -1,0 +1,37 @@
+#!/bin/bash
+
+source ../settings/scripts/_common.sh
+
+service_was_active=false
+
+finish_backup() {
+	local exit_code=$?
+	trap - EXIT
+	if [[ "$service_was_active" == true ]]; then
+		ynh_systemctl --service="$app" --action="start" || exit_code=$?
+	fi
+	if [[ "$exit_code" == 0 ]]; then
+		true
+	else
+		false && true
+	fi
+	ynh_exit_properly
+}
+trap finish_backup EXIT
+
+if systemctl is-active --quiet "$app"; then
+	service_was_active=true
+		ynh_print_info "Stopping IPTV Tunerr for a consistent backup..."
+	ynh_systemctl --service="$app" --action="stop"
+fi
+
+ynh_print_info "Snapshotting IPTV Tunerr state..."
+mkdir -p "$YNH_APP_BACKUP_DIR/data"
+rsync --archive --delete \
+	--exclude="/cache/" \
+	--exclude="/iptvtunerr.log" \
+	"$data_dir/" "$YNH_APP_BACKUP_DIR/data/"
+
+ynh_backup --src_path="$install_dir"
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup --src_path="/etc/systemd/system/$app.service"

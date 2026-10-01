@@ -1,0 +1,22 @@
+#!/bin/bash
+
+source _common.sh
+
+ynh_script_progression "Installing IPTV Tunerr release files..."
+ynh_setup_source --dest_dir="$install_dir"
+chown -R "$app:$app" "$install_dir"
+
+if [[ -z "${base_url:-}" ]]; then
+	base_url="https://$domain"
+fi
+ynh_app_setting_set --key=base_url --value="$base_url"
+ynh_app_setting_set --key=trusted_networks --value="${trusted_networks:-127.0.0.0/8,::1/128,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,fc00::/7}"
+
+ynh_script_progression "Preparing persistent data, LAN access rules, and service configuration..."
+iptvtunerr_prepare_service
+
+ynh_script_progression "Starting IPTV Tunerr..."
+ynh_systemctl --service="$app" --action="start"
+iptvtunerr_register_service
+
+ynh_script_progression "IPTV Tunerr installation completed"

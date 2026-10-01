@@ -1,0 +1,31 @@
+[Unit]
+Description=IPTV Tunerr IPTV tuner and guide bridge
+After=network.target
+
+[Service]
+Type=simple
+User=__APP__
+Group=__APP__
+WorkingDirectory=__DATA_DIR__
+Environment="HOME=__DATA_DIR__"
+Environment="IPTV_TUNERR_BASE_URL=__BASE_URL__"
+Environment="IPTV_TUNERR_CATALOG=__DATA_DIR__/catalog.json"
+Environment="IPTV_TUNERR_CACHE=__DATA_DIR__/cache"
+Environment="IPTV_TUNERR_WEBUI_STATE_FILE=__DATA_DIR__/webui-state.json"
+EnvironmentFile=-__DATA_DIR__/iptvtunerr.env
+ExecStart=__INSTALL_DIR__/iptv-tunerr run -addr 127.0.0.1:__PORT__
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+UMask=0077
+StandardOutput=append:__DATA_DIR__/iptvtunerr.log
+StandardError=append:__DATA_DIR__/iptvtunerr.log
+SyslogIdentifier=__APP__
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=__DATA_DIR__
+
+[Install]
+WantedBy=multi-user.target
